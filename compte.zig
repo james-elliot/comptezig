@@ -1,11 +1,11 @@
 const std = @import("std");
 
 const NB: usize = 6;
-const SQUARE: bool = true;
+const SQUARE: bool = false;
 const HASH: bool = false;
 
-const HASH_NB_BITS: u8 = 28;
-const VALS_NB_BITS: u8 = 16;
+const HASH_NB_BITS: u8 = 30;
+const VALS_NB_BITS: u8 = 28;
 const MAXV = 1000;
 
 const HASH_SIZE: usize = 1 << HASH_NB_BITS;
@@ -41,7 +41,7 @@ fn div(a: u64, b: u64) ?u64 {
     return null;
 }
 
-const ops = [4]*const fn (u64, u64) ?u64{ add, sub, mul, div };
+const ops = [_]*const fn (u64, u64) ?u64{ add, sub, mul, div };
 const nops = [_][]const u8{ "+", "-", "*", "/" };
 
 fn update_hash(res: u64, hv: u64) bool {
@@ -142,14 +142,14 @@ pub fn compte(tab: *[NB]u64, res: u64) bool {
 }
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
-    const RndGen = std.rand.DefaultPrng;
-    hashes = try allocator.alloc(u64, HASH_SIZE);
-    defer allocator.free(hashes);
-    var rnd = RndGen.init(0);
-    hashesv = try allocator.alloc(u64, VALS_SIZE);
-    defer allocator.free(hashesv);
     if (HASH) {
+        const allocator = std.heap.page_allocator;
+        const RndGen = std.rand.DefaultPrng;
+        hashes = try allocator.alloc(u64, HASH_SIZE);
+        defer allocator.free(hashes);
+        var rnd = RndGen.init(0);
+        hashesv = try allocator.alloc(u64, VALS_SIZE);
+        defer allocator.free(hashesv);
         for (hashesv) |*a| a.* = rnd.random().int(u60);
     }
 
