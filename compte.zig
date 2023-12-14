@@ -18,7 +18,7 @@ var hashesv: []u64 = undefined;
 var reached: [MAXV]bool = undefined;
 
 fn add(a: u64, b: u64) ?u64 {
-    var res = @addWithOverflow(a, b);
+    const res = @addWithOverflow(a, b);
     if (res[1] == 0) return res[0];
     return null;
 }
@@ -30,7 +30,7 @@ fn sub(a: u64, b: u64) ?u64 {
 
 fn mul(a: u64, b: u64) ?u64 {
     if (b != 1) {
-        var res = @mulWithOverflow(a, b);
+        const res = @mulWithOverflow(a, b);
         if (res[1] == 0) return res[0];
     }
     return null;
@@ -46,7 +46,7 @@ const nops = [_][]const u8{ "+", "-", "*", "/" };
 
 fn update_hash(res: u64, hv: u64) bool {
     if (res < VALS_SIZE) {
-        var nhv: u64 = hv + hashesv[res];
+        const nhv: u64 = hv + hashesv[res];
         if (hashes[nhv & HASH_MASK] != nhv) {
             hashes[nhv & HASH_MASK] = nhv;
             return true;
@@ -57,12 +57,12 @@ fn update_hash(res: u64, hv: u64) bool {
 fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
     var i: usize = 0;
     while (i < size) {
-        var a: u64 = v[i];
+        const a: u64 = v[i];
         var j: usize = i + 1;
         while (j < size) {
-            var b: u64 = v[j];
-            var a1: u64 = @max(a, b);
-            var a2: u64 = @min(a, b);
+            const b: u64 = v[j];
+            const a1: u64 = @max(a, b);
+            const a2: u64 = @min(a, b);
             var nhv = hv;
             if (HASH) nhv = nhv - hashesv[a1] - hashesv[a2];
             for (ops, 0..) |f, k| {
@@ -98,11 +98,11 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
     if (SQUARE) {
         i = 0;
         while (i < size) {
-            var a: u64 = v[i];
+            const a: u64 = v[i];
             var nhv = hv;
             if (HASH) nhv -= hashesv[a];
             if (a != 1) {
-                var res = @mulWithOverflow(a, a);
+                const res = @mulWithOverflow(a, a);
                 if ((res[1] == 0) and ((!HASH) or (update_hash(res[0], nhv)))) {
                     if (res[0] < MAXV) reached[res[0]] = true;
                     if (res[0] == r) {
@@ -154,7 +154,7 @@ pub fn main() !void {
     }
 
     var tab = [NB]u64{ 1, 1, 10, 10, 25, 100 };
-    var res: u64 = 0;
+    const res: u64 = 0;
 
     var t = std.time.milliTimestamp();
     if (compte(&tab, res)) {
