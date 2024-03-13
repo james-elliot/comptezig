@@ -1,8 +1,8 @@
 const std = @import("std");
 
 const NB: usize = 6;
-const SQUARE: bool = false;
-const HASH: bool = false;
+const SQUARE: bool = true;
+const HASH: bool = true;
 
 const HASH_NB_BITS: u8 = 30;
 const VALS_NB_BITS: u8 = 28;
@@ -146,10 +146,10 @@ pub fn main() !void {
         const allocator = std.heap.page_allocator;
         const RndGen = std.rand.DefaultPrng;
         hashes = try allocator.alloc(u64, HASH_SIZE);
-        defer allocator.free(hashes);
+        //        defer allocator.free(hashes);
         var rnd = RndGen.init(0);
         hashesv = try allocator.alloc(u64, VALS_SIZE);
-        defer allocator.free(hashesv);
+        //        defer allocator.free(hashesv);
         for (hashesv) |*a| a.* = rnd.random().int(u60);
     }
 
@@ -165,8 +165,8 @@ pub fn main() !void {
     t = std.time.milliTimestamp() - t;
 
     for (reached, 0..) |b, i| {
-        if (!b) std.debug.print("{d} ", .{i});
+        if ((!b) and (i != 0)) std.debug.print("{d} ", .{i});
     }
 
-    std.debug.print("{d}ms\n", .{t});
+    std.debug.print("\n{d}ms\n", .{t});
 }
