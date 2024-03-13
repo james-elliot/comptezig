@@ -4,8 +4,8 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 30;
-const VALS_NB_BITS: u8 = 28;
+const HASH_NB_BITS: u8 = 25;
+const VALS_NB_BITS: u8 = 29;
 const MAXV = 1000;
 
 const HASH_SIZE: usize = 1 << HASH_NB_BITS;
@@ -81,12 +81,17 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
                                 tmp = essai(v, size - 1, r, nhv)
                             else
                                 tmp = essai(v, size - 1, r, nhv + hashesv[res]);
+                            v[j] = b;
+                            v[i] = a;
                             if (tmp) {
+                                std.debug.print("(", .{});
+                                for (0..size) |l| {
+                                    if ((l != i) and (l != j)) std.debug.print("{d} ", .{v[l]});
+                                }
+                                std.debug.print("{d}) ", .{res});
                                 std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
                                 return true;
                             }
-                            v[j] = b;
-                            v[i] = a;
                         }
                     }
                 }
@@ -115,11 +120,16 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
                         tmp = essai(v, size, r, hv)
                     else
                         tmp = essai(v, size, r, hv + hashesv[res[0]]);
+                    v[i] = a;
                     if (tmp) {
+                        std.debug.print("(", .{});
+                        for (0..size) |l| {
+                            if (l != i) std.debug.print("{d} ", .{v[l]});
+                        }
+                        std.debug.print("{d}) ", .{res[0]});
                         std.debug.print("{d}^2 = {d}\n", .{ a, res[0] });
                         return true;
                     }
-                    v[i] = a;
                 }
             }
             i += 1;
@@ -153,8 +163,8 @@ pub fn main() !void {
         for (hashesv) |*a| a.* = rnd.random().int(u60);
     }
 
-    var tab = [NB]u64{ 1, 1, 10, 10, 25, 100 };
-    const res: u64 = 0;
+    var tab = [NB]u64{ 1, 10, 10, 25, 75, 100 };
+    const res: u64 = 948;
 
     var t = std.time.milliTimestamp();
     if (compte(&tab, res)) {
