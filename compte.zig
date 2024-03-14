@@ -4,17 +4,20 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 25;
+const HASH_NB_BITS: u8 = 29;
 const VALS_NB_BITS: u8 = 29;
 const MAXV = 1000;
 
+const ht = u128;
+const ht2 = u120;
+
 const HASH_SIZE: usize = 1 << HASH_NB_BITS;
-const HASH_MASK: u64 = HASH_SIZE - 1;
+const HASH_MASK: ht = HASH_SIZE - 1;
 
 const VALS_SIZE: usize = 1 << VALS_NB_BITS;
 
-var hashes: []u64 = undefined;
-var hashesv: []u64 = undefined;
+var hashes: []ht = undefined;
+var hashesv: []ht = undefined;
 var reached: [MAXV]bool = undefined;
 
 fn add(a: u64, b: u64) ?u64 {
@@ -44,17 +47,19 @@ fn div(a: u64, b: u64) ?u64 {
 const ops = [_]*const fn (u64, u64) ?u64{ add, sub, mul, div };
 const nops = [_][]const u8{ "+", "-", "*", "/" };
 
-fn update_hash(res: u64, hv: u64) bool {
+fn update_hash(res: u64, hv: ht) bool {
     if (res < VALS_SIZE) {
-        const nhv: u64 = hv + hashesv[res];
-        if (hashes[nhv & HASH_MASK] != nhv) {
-            hashes[nhv & HASH_MASK] = nhv;
+        const nhv: ht = hv + hashesv[res];
+        const mask: ht = nhv & HASH_MASK;
+        const ind: usize = @intCast(mask);
+        if (hashes[ind] != nhv) {
+            hashes[ind] = nhv;
             return true;
         }
     }
     return false;
 }
-fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
+fn essai(v: *[NB]u64, size: usize, r: u64, hv: ht) bool {
     var i: usize = 0;
     while (i < size) {
         const a: u64 = v[i];
@@ -139,7 +144,7 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: u64) bool {
 }
 
 pub fn compte(tab: *[NB]u64, res: u64) bool {
-    var hv: u64 = 0;
+    var hv: ht = 0;
     if (HASH) {
         for (tab) |x| {
             hv += hashesv[x];
@@ -155,16 +160,16 @@ pub fn main() !void {
     if (HASH) {
         const allocator = std.heap.page_allocator;
         const RndGen = std.rand.DefaultPrng;
-        hashes = try allocator.alloc(u64, HASH_SIZE);
+        hashes = try allocator.alloc(ht, HASH_SIZE);
         //        defer allocator.free(hashes);
         var rnd = RndGen.init(0);
-        hashesv = try allocator.alloc(u64, VALS_SIZE);
+        hashesv = try allocator.alloc(ht, VALS_SIZE);
         //        defer allocator.free(hashesv);
-        for (hashesv) |*a| a.* = rnd.random().int(u60);
+        for (hashesv) |*a| a.* = rnd.random().int(ht2);
     }
 
-    var tab = [NB]u64{ 1, 10, 10, 25, 75, 100 };
-    const res: u64 = 948;
+    var tab = [NB]u64{ 1, 1, 10, 10, 75, 100 };
+    const res: u64 = 0;
 
     var t = std.time.milliTimestamp();
     if (compte(&tab, res)) {
