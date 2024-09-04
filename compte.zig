@@ -4,8 +4,8 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 29;
-const VALS_NB_BITS: u8 = 29;
+const HASH_NB_BITS: u8 = 27;
+const VALS_NB_BITS: u8 = 27;
 const MAXV = 1000;
 
 const ht = u128;
@@ -46,6 +46,7 @@ fn div(a: u64, b: u64) ?u64 {
 
 const ops = [_]*const fn (u64, u64) ?u64{ add, sub, mul, div };
 const nops = [_][]const u8{ "+", "-", "*", "/" };
+const nops2 = [_]u8{ '+', '-', '*', '/' };
 
 fn update_hash(res: u64, hv: ht) bool {
     if (res < VALS_SIZE) {
@@ -75,7 +76,7 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: ht) bool {
                     if ((!HASH) or (update_hash(res, nhv))) {
                         if (res < MAXV) reached[res] = true;
                         if (res == r) {
-                            std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
+                            std.debug.print("{d} {c} {d} = {d}\n", .{ a1, nops2[k], a2, res });
                             return true;
                         }
                         if (size > 2) {
@@ -94,7 +95,7 @@ fn essai(v: *[NB]u64, size: usize, r: u64, hv: ht) bool {
                                     if ((l != i) and (l != j)) std.debug.print("{d} ", .{v[l]});
                                 }
                                 std.debug.print("{d}) ", .{res});
-                                std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
+                                std.debug.print("{d} {c} {d} = {d}\n", .{ a1, nops2[k], a2, res });
                                 return true;
                             }
                         }
@@ -176,12 +177,11 @@ pub fn main() !void {
         std.debug.print("OK\n", .{});
     } else {
         std.debug.print("NOK\n", .{});
+        for (reached, 0..) |b, i| {
+            if ((!b) and (i != 0)) std.debug.print("{d} ", .{i});
+        }
     }
     t = std.time.milliTimestamp() - t;
-
-    for (reached, 0..) |b, i| {
-        if ((!b) and (i != 0)) std.debug.print("{d} ", .{i});
-    }
 
     std.debug.print("\n{d}ms\n", .{t});
 }
