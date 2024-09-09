@@ -1,8 +1,8 @@
 const std = @import("std");
 
 const NB: usize = 6;
-const SQUARE: bool = true;
-const HASH: bool = true;
+const SQUARE: bool = false;
+const HASH: bool = false;
 
 const HASH_NB_BITS: u8 = 27;
 const VALS_NB_BITS: u8 = 27;
@@ -160,7 +160,7 @@ pub fn compte(tab: *[NB]u64, res: u64) bool {
 pub fn main() !void {
     if (HASH) {
         const allocator = std.heap.page_allocator;
-        const RndGen = std.rand.DefaultPrng;
+        const RndGen = std.Random.DefaultPrng;
         hashes = try allocator.alloc(ht, HASH_SIZE);
         //        defer allocator.free(hashes);
         var rnd = RndGen.init(0);

@@ -4,8 +4,8 @@ const assert = std.debug.assert;
 const NB: usize = 6;
 const SQUARE: bool = true;
 
-const HASH_NB_BITS: u8 = 29;
-const VALS_NB_BITS: u8 = 29;
+const HASH_NB_BITS: u8 = 28;
+const VALS_NB_BITS: u8 = 28;
 const MAXV = 1000;
 
 const Ht = u64;
@@ -67,26 +67,25 @@ pub fn update_hash(hv: u64) bool {
 pub fn print_t(tab: *Nbs, size: usize) void {
     std.debug.print("size = {d}\n", .{size});
     for (0..NB) |i| {
-        if (tab[i].nb > 0) std.debug.print("({d},{d}) ", .{ tab[i].nb, tab[i].x });
+        std.debug.print("({d},{d}) ", .{ tab[i].nb, tab[i].x });
     }
     std.debug.print("\n", .{});
 }
 
 pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
-    print_t(tab, size);
-    for (0..size) |i| {
+    for (0..NB) |i| {
         if (tab[i].nb == 0) continue;
         const a = tab[i].x;
-        var nhv = hv ^ hashesv[tab[i].nb - 1][tab[i].x];
+        //        var nhv = hv ^ hashesv[tab[i].nb - 1][tab[i].x];
         tab[i].nb -= 1;
-        if (tab[i].nb > 0) nhv ^= hashesv[tab[i].nb - 1][tab[i].x];
+        //        if (tab[i].nb > 0) nhv ^= hashesv[tab[i].nb - 1][tab[i].x];
         const jmin = if (tab[i].nb == 0) (i + 1) else i;
-        for (jmin..size) |j| {
+        for (jmin..NB) |j| {
             if (tab[j].nb == 0) continue;
             const b = tab[j].x;
-            var nhv2 = nhv ^ hashesv[tab[j].nb - 1][tab[j].x];
+            //            var nhv2 = nhv ^ hashesv[tab[j].nb - 1][tab[j].x];
             tab[j].nb -= 1;
-            if (tab[j].nb > 0) nhv2 ^= hashesv[tab[j].nb - 1][tab[j].x];
+            //            if (tab[j].nb > 0) nhv2 ^= hashesv[tab[j].nb - 1][tab[j].x];
             const a1: u64 = @max(a, b);
             const a2: u64 = @min(a, b);
             for (ops, 0..) |f, k| {
@@ -97,29 +96,30 @@ pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
                         std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
                         return true;
                     }
-                    var nhv3 = nhv2;
-                    var ind: usize = 0;
-                    for (0..size) |l| {
-                        if (tab[l].nb == 0) ind = l;
-                        if ((tab[l].nb > 0) and (tab[l].x == res)) {
-                            nhv3 ^= hashesv[tab[l].nb - 1][tab[l].x];
-                            tab[l].nb += 1;
-                            nhv3 ^= hashesv[tab[l].nb - 1][tab[l].x];
-                            ind = l;
-                            break;
+                    if (size >= 3) {
+                        //                        var nhv3 = nhv2;
+                        var ind: usize = 0;
+                        for (0..size) |l| {
+                            if (tab[l].nb == 0) ind = l;
+                            if ((tab[l].nb > 0) and (tab[l].x == res)) {
+                                //                                nhv3 ^= hashesv[tab[l].nb - 1][tab[l].x];
+                                tab[l].nb += 1;
+                                //                                nhv3 ^= hashesv[tab[l].nb - 1][tab[l].x];
+                                ind = l;
+                                break;
+                            }
+                        } else {
+                            tab[ind].nb += 1;
+                            tab[ind].x = res;
+                            //                            nhv3 ^= hashesv[tab[ind].nb - 1][tab[ind].x];
                         }
-                    } else {
-                        tab[ind].nb += 1;
-                        tab[ind].x = res;
-                        nhv3 ^= hashesv[tab[ind].nb - 1][tab[ind].x];
-                    }
-                    if (update_hash(nhv3) and (size > 2)) {
-                        if (essai(tab, size - 1, r, nhv2)) {
+                        //                        if (essai(tab, size - 1, r, nhv3)) {
+                        if (essai(tab, size - 1, r, hv)) {
                             std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
                             return true;
                         }
+                        tab[ind].nb -= 1;
                     }
-                    tab[ind].nb -= 1;
                 }
             }
             tab[j].x = b;
@@ -137,8 +137,6 @@ pub fn compte(tab2: *Nbs, size: usize, res: u64) bool {
         const t = tab2[i];
         if (t.nb > 0) hv ^= hashesv[t.nb - 1][t.x];
     }
-    @memset(hashes, 0);
-    for (&reached) |*b| b.* = false;
     return essai(tab2, size, res, hv);
 }
 
@@ -170,6 +168,9 @@ pub fn main() !void {
     std.debug.print("{d}\n", .{tab2[0].x});
 
     const res: u64 = 0;
+
+    @memset(hashes, 0);
+    for (&reached) |*b| b.* = false;
 
     var t = std.time.milliTimestamp();
     if (compte(&tab2, size, res)) {
