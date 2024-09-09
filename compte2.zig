@@ -144,7 +144,7 @@ pub fn compte(tab2: *Nbs, size: usize, res: u64) bool {
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
-    const RndGen = std.rand.DefaultPrng;
+    const RndGen = std.Random.DefaultPrng;
     var rnd = RndGen.init(0);
     hashes = try allocator.alloc(Ht, HASH_SIZE);
     hashesv[0] = try allocator.alloc(Ht, VALS_SIZE);
