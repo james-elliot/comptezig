@@ -3,13 +3,13 @@ const assert = std.debug.assert;
 
 const NB: usize = 6;
 const SQUARE: bool = true;
-const DO_HASH: bool = false;
+const DO_HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 26;
-const VALS_NB_BITS: u8 = 26;
+const HASH_NB_BITS: u8 = 25;
+const VALS_NB_BITS: u8 = 25;
 const MAXV = 1000;
 
-const Ht = u64;
+const Ht = u128;
 
 const Nb = struct {
     x: u64,
@@ -55,7 +55,7 @@ fn div(a: u64, b: u64) ?u64 {
 const ops = [_]*const fn (u64, u64) ?u64{ add, sub, mul, div };
 const nops = [_][]const u8{ "+", "-", "*", "/" };
 
-pub fn test_hash(hv: u64) bool {
+pub fn test_hash(hv: Ht) bool {
     const mask: Ht = hv & HASH_MASK;
     const ind: usize = @intCast(mask);
     if (hashes[ind] != hv) {
@@ -73,10 +73,24 @@ pub fn print_t(tab: *Nbs, size: usize) void {
     std.debug.print("\n", .{});
 }
 
+pub fn compute_hash(tab2: *Nbs) Ht {
+    var hv: Ht = 0;
+    for (0..NB) |i| {
+        const t = tab2[i];
+        if ((t.nb > 0) and (t.x < VALS_SIZE)) hv ^= hashesv[t.nb - 1][t.x];
+    }
+    return hv;
+}
+
 pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
     var nhv: Ht = undefined;
     var nhv2: Ht = undefined;
     var nhv3: Ht = undefined;
+    const thv: Ht = compute_hash(tab);
+    if ((DO_HASH) and (thv != hv)) {
+        std.debug.print("Echec\n", .{});
+        std.process.exit(0);
+    }
     if ((DO_HASH) and (test_hash(hv))) return false;
     for (0..NB) |i| {
         if (tab[i].nb == 0) continue;
@@ -131,16 +145,11 @@ pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
         tab[i].x = a;
         tab[i].nb += 1;
     }
-
     return false;
 }
 
 pub fn compte(tab2: *Nbs, size: usize, res: u64) bool {
-    var hv: Ht = 0;
-    for (0..size) |i| {
-        const t = tab2[i];
-        if (t.nb > 0) hv ^= hashesv[t.nb - 1][t.x];
-    }
+    const hv: Ht = compute_hash(tab2);
     return essai(tab2, size, res, hv);
 }
 
@@ -173,7 +182,7 @@ pub fn main() !void {
             Nb{ .x = 8, .nb = 0 },
         };
         const size: usize = NB;
-        const res: u64 = 0;
+        const res: u64 = 181;
         var t = std.time.milliTimestamp();
         if (compte(&tab2, size, res)) {
             //            std.debug.print("OK\n", .{});
