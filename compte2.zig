@@ -5,8 +5,10 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const DO_HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 31;
-const VALS_NB_BITS: u8 = 31;
+const HASH_NB_BITS: u8 = 27;
+const VALS_NB_BITS: u8 = 27;
+const VALS_SIZE: usize = 1 << VALS_NB_BITS;
+const VAL_MAX: u64 = VALS_SIZE;
 const MAXV = 1000;
 
 const Ht = u64;
@@ -20,9 +22,6 @@ const Nbs = [NB]Nb;
 
 const HASH_SIZE: usize = 1 << HASH_NB_BITS;
 const HASH_MASK: Ht = HASH_SIZE - 1;
-
-const VALS_SIZE: usize = 1 << VALS_NB_BITS;
-const VALS_SIZE2: usize = VALS_SIZE / 8;
 
 var hashes: []Ht = undefined;
 var hashesv: [NB][]Ht = undefined;
@@ -127,6 +126,35 @@ pub fn compte(tab: *Nbs, size: usize, r: u64) bool {
             tab[j].x = b;
             tab[j].nb += 1;
         }
+        if (SQUARE) {
+            if (a != 1) {
+                const res = @mulWithOverflow(a, a);
+                if ((res[1] == 0) and (res[0] < VAL_MAX)) {
+                    if (res[0] < MAXV) reached[res[0]] = true;
+                    if (res[0] == r) {
+                        std.debug.print("{d}^2 = {d}\n", .{ a, res[0] });
+                        return true;
+                    }
+                    var ind: usize = 0;
+                    for (0..NB) |l| {
+                        if (tab[l].nb == 0) ind = l;
+                        if ((tab[l].nb > 0) and (tab[l].x == res[0])) {
+                            tab[l].nb += 1;
+                            ind = l;
+                            break;
+                        }
+                    } else {
+                        tab[ind].nb += 1;
+                        tab[ind].x = res[0];
+                    }
+                    if (compte(tab, size, r)) {
+                        std.debug.print("{d}^2 = {d}\n", .{ a, res[0] });
+                        return true;
+                    }
+                    tab[ind].nb -= 1;
+                }
+            }
+        }
         tab[i].x = a;
         tab[i].nb += 1;
     }
@@ -139,13 +167,11 @@ pub fn main() !void {
     var rnd = RndGen.init(0);
 
     hashes = try allocator.alloc(Ht, HASH_SIZE);
-    hashesv[0] = try allocator.alloc(Ht, VALS_SIZE);
-    for (1..NB) |i| {
-        hashesv[i] = try allocator.alloc(Ht, VALS_SIZE2);
+    for (0..NB) |i| {
+        hashesv[i] = try allocator.alloc(Ht, VALS_SIZE);
     }
     for (0..NB) |i| {
-        const m = if (i == 0) VALS_SIZE else VALS_SIZE2;
-        for (0..m) |j| {
+        for (0..VALS_SIZE) |j| {
             hashesv[i][j] = rnd.random().int(Ht);
         }
     }
