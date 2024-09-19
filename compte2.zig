@@ -5,8 +5,8 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const DO_HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 27;
-const VALS_NB_BITS: u8 = 27;
+const HASH_NB_BITS: u8 = 30;
+const VALS_NB_BITS: u8 = 30;
 const VALS_SIZE: usize = 1 << VALS_NB_BITS;
 const VAL_MAX: u64 = VALS_SIZE;
 const MAXV = 1000;
@@ -177,7 +177,7 @@ pub fn main() !void {
     }
 
     var dt: i64 = 0;
-    for (0..100) |_| {
+    for (0..1) |_| {
         @memset(&reached, false);
         @memset(hashes, 0);
         var tab2 = Nbs{
@@ -190,6 +190,7 @@ pub fn main() !void {
         };
         const size: usize = NB;
         const res: u64 = 0;
+        //                const res: u64 = 943;
         var t = std.time.milliTimestamp();
         if (compte(&tab2, size, res)) {
             //            std.debug.print("OK\n", .{});
