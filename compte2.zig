@@ -3,13 +3,13 @@ const assert = std.debug.assert;
 
 const NB: usize = 6;
 const SQUARE: bool = true;
-const DO_HASH: bool = true;
+const DO_HASH: bool = false;
 
 const HASH_NB_BITS: u8 = 25;
 const VALS_NB_BITS: u8 = 25;
 const MAXV = 1000;
 
-const Ht = u128;
+const Ht = u64;
 
 const Nb = struct {
     x: u64,
@@ -86,11 +86,6 @@ pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
     var nhv: Ht = undefined;
     var nhv2: Ht = undefined;
     var nhv3: Ht = undefined;
-    const thv: Ht = compute_hash(tab);
-    if ((DO_HASH) and (thv != hv)) {
-        std.debug.print("Echec\n", .{});
-        std.process.exit(0);
-    }
     if ((DO_HASH) and (test_hash(hv))) return false;
     for (0..NB) |i| {
         if (tab[i].nb == 0) continue;
@@ -117,7 +112,7 @@ pub fn essai(tab: *Nbs, size: usize, r: u64, hv: Ht) bool {
                     }
                     if (size >= 3) {
                         var ind: usize = 0;
-                        for (0..size) |l| {
+                        for (0..NB) |l| {
                             if (tab[l].nb == 0) ind = l;
                             if ((tab[l].nb > 0) and (tab[l].x == res)) {
                                 nhv3 = nhv2 ^ hashesv[tab[l].nb - 1][tab[l].x];
@@ -157,6 +152,7 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     const RndGen = std.Random.DefaultPrng;
     var rnd = RndGen.init(0);
+
     hashes = try allocator.alloc(Ht, HASH_SIZE);
     hashesv[0] = try allocator.alloc(Ht, VALS_SIZE);
     for (1..NB) |i| {
@@ -170,7 +166,7 @@ pub fn main() !void {
     }
 
     var dt: i64 = 0;
-    for (0..1) |_| {
+    for (0..1000) |_| {
         @memset(&reached, false);
         @memset(hashes, 0);
         var tab2 = Nbs{
@@ -182,7 +178,7 @@ pub fn main() !void {
             Nb{ .x = 8, .nb = 0 },
         };
         const size: usize = NB;
-        const res: u64 = 181;
+        const res: u64 = 0;
         var t = std.time.milliTimestamp();
         if (compte(&tab2, size, res)) {
             //            std.debug.print("OK\n", .{});
