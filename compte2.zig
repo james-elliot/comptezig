@@ -5,10 +5,10 @@ const NB: usize = 6;
 const SQUARE: bool = true;
 const DO_HASH: bool = true;
 
-const HASH_NB_BITS: u8 = 27;
-const VALS_NB_BITS: u8 = 27;
+const HASH_NB_BITS: u8 = 30;
+const VALS_NB_BITS: u8 = 30;
 const VALS_SIZE: usize = 1 << VALS_NB_BITS;
-const VAL_MAX: u64 = VALS_SIZE * 32768;
+const VAL_MAX: u64 = VALS_SIZE << 33;
 const MAXV = 1000;
 
 const Ht = u64;
@@ -26,6 +26,7 @@ const HASH_MASK: Ht = HASH_SIZE - 1;
 var hashes: []Ht = undefined;
 var hashesv: [NB][]Ht = undefined;
 var reached: [MAXV]bool = undefined;
+var found: u64 = undefined;
 
 fn add(a: u64, b: u64) ?u64 {
     const res = @addWithOverflow(a, b);
@@ -71,6 +72,13 @@ pub fn test_hash(tab2: *Nbs) bool {
     return true;
 }
 
+pub fn print_reached() void {
+    for (reached, 0..) |b, i| {
+        if ((!b) and (i != 0)) std.debug.print("{d} ", .{i});
+    }
+    std.debug.print("\n", .{});
+}
+
 pub fn print_t(tab: *Nbs, size: usize) void {
     std.debug.print("size = {d}\n", .{size});
     for (0..NB) |i| {
@@ -95,7 +103,11 @@ pub fn compte(tab: *Nbs, size: usize, r: u64) bool {
             for (ops, 0..) |f, k| {
                 if (f(a1, a2)) |res| {
                     if (res >= VAL_MAX) continue;
-                    if (res < MAXV) reached[res] = true;
+                    if ((res < MAXV) and !reached[res]) {
+                        reached[res] = true;
+                        found += 1;
+                        if (found > 900) print_reached();
+                    }
                     if (res == r) {
                         std.debug.print("{d} {s} {d} = {d}\n", .{ a1, nops[k], a2, res });
                         return true;
@@ -128,7 +140,11 @@ pub fn compte(tab: *Nbs, size: usize, r: u64) bool {
             if (a != 1) {
                 const res = @mulWithOverflow(a, a);
                 if ((res[1] == 0) and (res[0] < VAL_MAX)) {
-                    if (res[0] < MAXV) reached[res[0]] = true;
+                    if ((res[0] < MAXV) and !reached[res[0]]) {
+                        reached[res[0]] = true;
+                        found += 1;
+                        if (found > 900) print_reached();
+                    }
                     if (res[0] == r) {
                         std.debug.print("{d}^2 = {d}\n", .{ a, res[0] });
                         return true;
@@ -177,6 +193,7 @@ pub fn main() !void {
     var dt: i64 = 0;
     for (0..1) |_| {
         @memset(&reached, false);
+        found = 0;
         @memset(hashes, 0);
         var tab2 = Nbs{
             Nb{ .x = 1, .nb = 2 },
@@ -200,7 +217,5 @@ pub fn main() !void {
         //        std.debug.print("\n{d}:{d}ms\n", .{ i, t });
     }
     std.debug.print("\n{d}ms\n", .{dt});
-    for (reached, 0..) |b, i| {
-        if ((!b) and (i != 0)) std.debug.print("{d} ", .{i});
-    }
+    print_reached();
 }
